@@ -1,7 +1,7 @@
 {
-  "name": "test-discord-app",
+  "name": "ttrpg-server-manager",
   "version": "1.0.0",
-  "description": "Discord app to test basic functionality",
+  "description": "Discord bot to perform some automated tasks in my TTRPG group's server",
   "type": "module",
   "private": true,
   "main": "src/server.js",

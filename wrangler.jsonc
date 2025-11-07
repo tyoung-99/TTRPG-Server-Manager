@@ -1,7 +1,7 @@
 {
-  "name": "test-discord-app",
+  "name": "ttrpg-server-manager",
   "main": "src/server.js",
-  "compatibility_date": "2025-11-06",
+  "compatibility_date": "2025-11-07",
 
   "observability": {
     "logs": {
