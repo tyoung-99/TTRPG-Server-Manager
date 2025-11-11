@@ -1,8 +1,8 @@
-import { HELLO_COMMAND } from "./commands.js";
 import dotenv from "dotenv";
 import process from "node:process";
+import { HELLO_COMMAND } from "./commands/hello.js";
 
-const commands = JSON.stringify([HELLO_COMMAND]);
+const commands = JSON.stringify([HELLO_COMMAND.data]);
 
 dotenv.config({ path: ".env" });
 const token = process.env.DISCORD_TOKEN;

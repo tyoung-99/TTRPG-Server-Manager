@@ -4,12 +4,9 @@ import {
   InteractionType,
   verifyKey,
 } from "discord-interactions";
-import { HELLO_COMMAND } from "./commands.js";
-import {
-  InteractionResponseFlags,
-  MessageComponentTypes,
-} from "discord-interactions";
+import { HELLO_COMMAND } from "./commands/hello.js";
 
+const commands = [HELLO_COMMAND];
 const router = AutoRouter();
 
 router.post("/interactions", async (req, env) => {
@@ -25,12 +22,14 @@ router.post("/interactions", async (req, env) => {
 
     if (interaction.type === InteractionType.APPLICATION_COMMAND) {
       const commandName = interaction.data.name;
-      switch (commandName) {
-        case HELLO_COMMAND.name:
-          return handleHelloCommand();
-        default:
-          return error(400, "Unknown command");
+
+      for (const cmd of commands) {
+        if (cmd.data.name === commandName) {
+          return await cmd.execute(interaction, env);
+        }
       }
+
+      return error(400, "Unknown command");
     }
 
     return error(400, "Unknown interaction type");
@@ -57,21 +56,6 @@ async function verifyDiscordRequest(req, env) {
   } catch (e) {
     return { interaction: null, isValid: false };
   }
-}
-
-function handleHelloCommand() {
-  return json({
-    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-    data: {
-      flags: InteractionResponseFlags.IS_COMPONENTS_V2,
-      components: [
-        {
-          type: MessageComponentTypes.TEXT_DISPLAY,
-          content: "Hello World",
-        },
-      ],
-    },
-  });
 }
 
 const server = {
