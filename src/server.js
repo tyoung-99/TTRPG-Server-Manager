@@ -4,9 +4,9 @@ import {
   InteractionType,
   verifyKey,
 } from "discord-interactions";
-import { HELLO_COMMAND } from "./commands/hello.js";
+import { SUMMARY_COMMAND } from "./commands/summary.js";
 
-const commands = [HELLO_COMMAND];
+const commands = [SUMMARY_COMMAND];
 const router = AutoRouter();
 
 router.post("/interactions", async (req, env) => {
@@ -30,6 +30,16 @@ router.post("/interactions", async (req, env) => {
       }
 
       return error(400, "Unknown command");
+    }
+
+    if (interaction.type === InteractionType.MODAL_SUBMIT) {
+      const modalId = interaction.data.custom_id;
+
+      for (const cmd of commands) {
+        if (cmd.modalId === modalId) {
+          return await cmd.handleModal(interaction, env);
+        }
+      }
     }
 
     return error(400, "Unknown interaction type");
