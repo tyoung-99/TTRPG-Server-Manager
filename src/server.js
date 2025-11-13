@@ -51,6 +51,12 @@ router.post("/interactions", async (req, env) => {
 
 router.all("*", () => error(404, "Not Found"));
 
+/**
+ * Validates incoming Discord request w/ discord-interactions.verifyKey()
+ * @param {Object} req Discord request object
+ * @param {Object} env Environment variables
+ * @returns interaction: Discord interaction object; isValid: boolean
+ */
 async function verifyDiscordRequest(req, env) {
   const signature = req.headers.get("X-Signature-Ed25519");
   const timestamp = req.headers.get("X-Signature-Timestamp");
