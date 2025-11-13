@@ -4,12 +4,9 @@ import {
   InteractionType,
   verifyKey,
 } from "discord-interactions";
-import { HELLO_COMMAND } from "./commands.js";
-import {
-  InteractionResponseFlags,
-  MessageComponentTypes,
-} from "discord-interactions";
+import { SUMMARY_COMMAND } from "./commands/summary.js";
 
+const commands = [SUMMARY_COMMAND];
 const router = AutoRouter();
 
 router.post("/interactions", async (req, env) => {
@@ -25,11 +22,23 @@ router.post("/interactions", async (req, env) => {
 
     if (interaction.type === InteractionType.APPLICATION_COMMAND) {
       const commandName = interaction.data.name;
-      switch (commandName) {
-        case HELLO_COMMAND.name:
-          return handleHelloCommand();
-        default:
-          return error(400, "Unknown command");
+
+      for (const cmd of commands) {
+        if (cmd.data.name === commandName) {
+          return await cmd.execute(interaction, env);
+        }
+      }
+
+      return error(400, "Unknown command");
+    }
+
+    if (interaction.type === InteractionType.MODAL_SUBMIT) {
+      const modalId = interaction.data.custom_id;
+
+      for (const cmd of commands) {
+        if (cmd.modalId === modalId) {
+          return await cmd.handleModal(interaction, env);
+        }
       }
     }
 
@@ -42,6 +51,12 @@ router.post("/interactions", async (req, env) => {
 
 router.all("*", () => error(404, "Not Found"));
 
+/**
+ * Validates incoming Discord request w/ discord-interactions.verifyKey()
+ * @param {Object} req Discord request object
+ * @param {Object} env Environment variables
+ * @returns interaction: Discord interaction object; isValid: boolean
+ */
 async function verifyDiscordRequest(req, env) {
   const signature = req.headers.get("X-Signature-Ed25519");
   const timestamp = req.headers.get("X-Signature-Timestamp");
@@ -57,21 +72,6 @@ async function verifyDiscordRequest(req, env) {
   } catch (e) {
     return { interaction: null, isValid: false };
   }
-}
-
-function handleHelloCommand() {
-  return json({
-    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-    data: {
-      flags: InteractionResponseFlags.IS_COMPONENTS_V2,
-      components: [
-        {
-          type: MessageComponentTypes.TEXT_DISPLAY,
-          content: "Hello World",
-        },
-      ],
-    },
-  });
 }
 
 const server = {
